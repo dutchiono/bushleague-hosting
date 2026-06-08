@@ -1,0 +1,72 @@
+name: Deploy James lane
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: lane-james-dotcache
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build static site
+        run: npm run build
+
+      - name: Ensure lane directory
+        env:
+          LANE_DEPLOY_SSH_KEY: ${{ secrets.LANE_DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        if: env.LANE_DEPLOY_SSH_KEY != '' && env.DEPLOY_HOST != ''
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.LANE_DEPLOY_USER }}
+          key: ${{ secrets.LANE_DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            mkdir -p "${{ secrets.LANE_DEPLOY_PATH }}/dist"
+
+      - name: Upload lane dist
+        env:
+          LANE_DEPLOY_SSH_KEY: ${{ secrets.LANE_DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        if: env.LANE_DEPLOY_SSH_KEY != '' && env.DEPLOY_HOST != ''
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.LANE_DEPLOY_USER }}
+          key: ${{ secrets.LANE_DEPLOY_SSH_KEY }}
+          source: "dist/*"
+          target: "${{ secrets.LANE_DEPLOY_PATH }}/dist"
+          strip_components: 1
+
+      - name: Fix permissions
+        env:
+          LANE_DEPLOY_SSH_KEY: ${{ secrets.LANE_DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        if: env.LANE_DEPLOY_SSH_KEY != '' && env.DEPLOY_HOST != ''
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.LANE_DEPLOY_USER }}
+          key: ${{ secrets.LANE_DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            find "${{ secrets.LANE_DEPLOY_PATH }}/dist" -type d -exec chmod 755 {} \;
+            find "${{ secrets.LANE_DEPLOY_PATH }}/dist" -type f -exec chmod 644 {} \;
+
+      - name: Skip notice
+        env:
+          LANE_DEPLOY_SSH_KEY: ${{ secrets.LANE_DEPLOY_SSH_KEY }}
+        if: env.LANE_DEPLOY_SSH_KEY == ''
+        run: echo "Deploy secrets not set yet — ask admin to provision lane james"

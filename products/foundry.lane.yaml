@@ -1,0 +1,28 @@
+# Product manifest — foundry
+product: foundry
+display_name: "Foundry launch demo"
+template_repo: dutchiono/cache-bar
+url_pattern: "https://{lane}.foundry.bushleague.xyz"
+
+deploy:
+  user: foundry
+  path: "/var/www/foundry/lanes/{lane}"
+  branch: main
+
+convex:
+  required: optional
+  note: "Demo Convex separate from production foundry demo if needed"
+
+backend_port: null
+
+forbidden:
+  urls:
+    - https://foundry.bushleague.xyz
+  deploy_paths:
+    - /var/www/foundry/dist
+
+lane_defaults:
+  stripe: off
+  telegram: off
+
+nginx_note: "Add foundry-lanes.map.conf mirroring dotcache pattern"

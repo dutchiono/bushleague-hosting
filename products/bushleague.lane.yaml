@@ -1,0 +1,23 @@
+# Product manifest — any apex subdomain
+product: bushleague
+display_name: "Apex bushleague site"
+template_repo: null
+url_pattern: "https://{lane}.bushleague.xyz"
+
+deploy:
+  user: "{lane}"
+  path: "/var/www/{lane}"
+  branch: main
+  note: "Often needs dedicated linux user per lane — admin creates"
+
+convex:
+  required: varies
+
+backend_port: varies
+
+forbidden:
+  urls:
+    - https://bushleague.xyz
+
+lane_defaults:
+  admin_provisioned: true

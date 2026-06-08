@@ -1,0 +1,39 @@
+# Product manifest — dotcache / cache-bar family
+product: dotcache
+display_name: ".cache storefront"
+template_repo: dutchiono/cache-bar
+# Designer forks become e.g. dutchiono/dotcache-james
+
+url_pattern: "https://{lane}.dotcache.bushleague.xyz"
+dns: "wildcard — any {lane}.dotcache.bushleague.xyz resolves to VPS"
+
+deploy:
+  user: dotcache
+  path: "/var/www/dotcache/lanes/{lane}"
+  branch: main
+
+convex:
+  required: true
+  # Each lane gets its own Convex project — never impartial-herring-497
+
+backend_port: null  # static dist + Convex cloud
+
+forbidden:
+  urls:
+    - https://dotcache.bushleague.xyz
+    - https://cachebar.bushleague.xyz
+  convex_projects:
+    - impartial-herring-497
+  telegram_bots:
+    - "@dotCache_bot"
+    - "@dotCache_manager_bot"
+  deploy_paths:
+    - /var/www/dotcache/dist
+
+lane_defaults:
+  stripe: off
+  prodigi: off
+  telegram: off
+  eliza: optional
+
+kill_switch: "sudo rm -rf /var/www/dotcache/lanes/{lane} && sudo systemctl reload nginx"

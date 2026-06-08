@@ -1,0 +1,28 @@
+name: Deploy bushleague.xyz
+
+on:
+  push:
+    branches: [main]
+    paths: ['public/**']
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Deploy apex index
+        env:
+          APEX_DEPLOY_SSH_KEY_B64: ${{ secrets.APEX_DEPLOY_SSH_KEY_B64 }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          APEX_DEPLOY_USER: ${{ secrets.APEX_DEPLOY_USER }}
+        if: env.APEX_DEPLOY_SSH_KEY_B64 != '' && env.DEPLOY_HOST != ''
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          echo "$APEX_DEPLOY_SSH_KEY_B64" | base64 -d > ~/.ssh/apex_key
+          chmod 600 ~/.ssh/apex_key
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          scp -i ~/.ssh/apex_key -o BatchMode=yes public/index.html "${APEX_DEPLOY_USER}@${DEPLOY_HOST}:/tmp/bushleague-index.html"
+          ssh -i ~/.ssh/apex_key -o BatchMode=yes "${APEX_DEPLOY_USER}@${DEPLOY_HOST}" "sudo cp /tmp/bushleague-index.html /var/www/default/index.html && sudo chmod 644 /var/www/default/index.html"

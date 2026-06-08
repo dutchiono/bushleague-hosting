@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bushleague.</title>
+  <meta name="description" content="Bushleague field tools, designer lanes on *.bushleague.xyz, and the bushleague-lane agent skill." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+  <style>
+    :root {
+      --bg: #090b10;
+      --panel: #101722;
+      --line: rgba(226, 232, 240, 0.14);
+      --text: #f4f7fb;
+      --muted: #9aa8ba;
+      --cyan: #25d8c2;
+      --gold: #f6bd5c;
+      --red: #ff5f6d;
+      --blue: #72a7ff;
+      --green: #83d18f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(37, 216, 194, 0.06), transparent 30rem), var(--bg);
+      font-family: "Space Grotesk", system-ui, sans-serif;
+    }
+    a { color: inherit; text-decoration: none; }
+    .shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+    header {
+      position: sticky; top: 0; z-index: 5;
+      backdrop-filter: blur(18px);
+      background: rgba(9, 11, 16, 0.78);
+      border-bottom: 1px solid var(--line);
+    }
+    nav { display: flex; align-items: center; justify-content: space-between; min-height: 68px; gap: 18px; flex-wrap: wrap; padding: 8px 0; }
+    .brand { font-size: 1.24rem; font-weight: 700; }
+    .nav-links { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .nav-links a, .nav-links button {
+      border: 1px solid transparent;
+      color: var(--muted);
+      font: 600 0.82rem "JetBrains Mono", monospace;
+      padding: 8px 10px;
+      border-radius: 6px;
+      background: transparent;
+      cursor: pointer;
+    }
+    .nav-links a:hover, .nav-links button:hover { color: var(--text); border-color: var(--line); }
+    .nav-links .active { color: var(--cyan); border-color: rgba(37, 216, 194, 0.45); }
+    .coffee { color: #15100a !important; background: var(--gold); border-color: rgba(246, 189, 92, 0.7) !important; }
+    .panel { display: none; padding-bottom: 54px; }
+    .panel.active { display: block; }
+    .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(330px, 0.7fr); gap: 34px; align-items: center; padding: 48px 0 32px; }
+    .kicker { display: inline-flex; color: var(--cyan); font: 700 0.78rem "JetBrains Mono", monospace; text-transform: uppercase; margin-bottom: 18px; }
+    h1 { margin: 0; max-width: 760px; font-size: clamp(2.6rem, 7vw, 5.5rem); line-height: 0.92; }
+    h2 { margin: 0 0 12px; font-size: 1.5rem; }
+    .lead { max-width: 690px; margin: 20px 0 0; color: var(--muted); font-size: 1.15rem; line-height: 1.45; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+    .button {
+      display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px;
+      border-radius: 7px; border: 1px solid var(--line); font: 700 0.86rem "JetBrains Mono", monospace;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .button.primary { background: var(--cyan); color: #04110f; border-color: rgba(37, 216, 194, 0.9); }
+    .card {
+      border: 1px solid var(--line); border-radius: 8px; background: rgba(16, 23, 34, 0.72);
+      padding: 20px; margin-bottom: 14px;
+    }
+    .card:hover { border-color: rgba(37, 216, 194, 0.35); }
+    .card small { color: var(--muted); font: 700 0.72rem "JetBrains Mono", monospace; text-transform: uppercase; }
+    .card h3 { margin: 10px 0 8px; font-size: 1.4rem; }
+    .card p { color: var(--muted); line-height: 1.5; margin: 0; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .formula {
+      font: 600 0.95rem "JetBrains Mono", monospace;
+      color: var(--cyan);
+      background: rgba(5, 8, 12, 0.55);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin: 20px 0;
+    }
+    table { width: 100%; border-collapse: collapse; font: 500 0.88rem "JetBrains Mono", monospace; }
+    th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; }
+    td a { color: var(--cyan); }
+    .live { color: var(--green); }
+    .soon { color: var(--gold); }
+    .copybox {
+      position: relative;
+      background: rgba(5, 8, 12, 0.65);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 12px 0;
+      font: 500 0.84rem "JetBrains Mono", monospace;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+    .copybtn {
+      position: absolute; top: 10px; right: 10px;
+      font: 600 0.72rem "JetBrains Mono", monospace;
+      padding: 6px 10px; border-radius: 5px;
+      border: 1px solid var(--line); background: rgba(255,255,255,0.06);
+      color: var(--muted); cursor: pointer;
+    }
+    .copybtn:hover { color: var(--text); border-color: var(--cyan); }
+    .skill-md { color: var(--muted); font: 500 0.82rem "JetBrains Mono", monospace; line-height: 1.55; }
+    .skill-md h3 { color: var(--text); font-family: "Space Grotesk", sans-serif; font-size: 1.1rem; margin: 22px 0 8px; }
+    .skill-md hr { border: 0; border-top: 1px solid var(--line); margin: 18px 0; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+    .step { border: 1px solid var(--line); border-radius: 8px; padding: 16px; background: rgba(16,23,34,0.5); }
+    .step b { display: block; color: var(--cyan); font: 700 0.78rem "JetBrains Mono", monospace; margin-bottom: 8px; }
+    footer { border-top: 1px solid var(--line); padding: 24px 0 36px; color: var(--muted); font: 600 0.82rem "JetBrains Mono", monospace; }
+    footer a { color: var(--cyan); }
+    @media (max-width: 860px) {
+      .hero, .grid-2, .grid-4, .steps { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="shell">
+      <a class="brand" href="https://bushleague.xyz">Bushleague.</a>
+      <div class="nav-links">
+        <button type="button" class="tab active" data-tab="home">Home</button>
+        <button type="button" class="tab" data-tab="lanes">Lanes</button>
+        <button type="button" class="tab" data-tab="skill">Skill</button>
+        <a href="https://foundry.bushleague.xyz">Foundry</a>
+        <a href="https://radar.bushleague.xyz">Radar</a>
+        <a href="https://dotcache.bushleague.xyz">Dotcache</a>
+        <a class="coffee" href="#support">Coffee</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="shell">
+    <!-- HOME -->
+    <section id="home" class="panel active">
+      <div class="hero">
+        <div>
+          <span class="kicker">Field tools + designer lanes</span>
+          <h1>Bushleague.</h1>
+          <p class="lead">Token launches, radar, storefronts, and your own lane at <strong style="color:var(--text)">{you}.{product}.bushleague.xyz</strong> — without touching production.</p>
+          <div class="actions">
+            <button type="button" class="button primary tab-jump" data-tab="lanes">How lanes work</button>
+            <button type="button" class="button tab-jump" data-tab="skill">bushleague-lane skill</button>
+            <a class="button" href="https://foundry.bushleague.xyz">Open Foundry</a>
+          </div>
+        </div>
+        <div class="card">
+          <small>Live lane example</small>
+          <h3><a href="https://james.dotcache.bushleague.xyz">james.dotcache</a></h3>
+          <p>James's .cache fork. Push <code>main</code> → site updates. Production dotcache unchanged.</p>
+          <p style="margin-top:12px"><a href="https://github.com/dutchiono/dotcache-james">github.com/dutchiono/dotcache-james</a></p>
+        </div>
+      </div>
+
+      <h2>Featured</h2>
+      <div class="grid-2" style="margin-bottom:28px">
+        <a class="card" href="https://foundry.bushleague.xyz">
+          <small>Launch desk</small><h3>Foundry</h3>
+          <p>Agent launch experiments and operator-facing product work.</p>
+        </a>
+        <a class="card" href="https://radar.bushleague.xyz">
+          <small>Telemetry</small><h3>Token Radar</h3>
+          <p>Base token momentum — volume, holders, bundle risk.</p>
+        </a>
+        <a class="card" href="https://dotcache.bushleague.xyz">
+          <small>Shop</small><h3>Dotcache</h3>
+          <p>Production .cache storefront. Lanes live at <code>{name}.dotcache.bushleague.xyz</code>.</p>
+        </a>
+        <a class="card" href="https://builder.dotcache.bushleague.xyz">
+          <small>Builder</small><h3>Dotcache Builder</h3>
+          <p>Foundry-style bot factory lane (platform experiment).</p>
+        </a>
+      </div>
+
+      <h2>Project index</h2>
+      <div class="grid-4">
+        <a class="card" href="https://cheetofax.bushleague.xyz"><small>Investigation</small><h3>Cheetofax</h3></a>
+        <a class="card" href="https://cachebar.bushleague.xyz"><small>Legacy</small><h3>Cachebar</h3></a>
+        <a class="card" href="https://classroom.bushleague.xyz"><small>Game</small><h3>Classroom</h3></a>
+        <a class="card" href="https://dar.bushleague.xyz"><small>Lab</small><h3>DAR</h3></a>
+        <a class="card" href="https://drown.bushleague.xyz"><small>Lab</small><h3>Drown</h3></a>
+        <a class="card" href="https://harpoon.bushleague.xyz"><small>Lab</small><h3>Harpoon</h3></a>
+        <a class="card" href="https://tokengod.bushleague.xyz"><small>Lab</small><h3>TokenGod</h3></a>
+        <a class="card" href="https://verse.bushleague.xyz"><small>Writing</small><h3>Verse</h3></a>
+      </div>
+    </section>
+
+    <!-- LANES -->
+    <section id="lanes" class="panel">
+      <div style="padding-top:40px">
+        <span class="kicker">All products</span>
+        <h1>Designer lanes</h1>
+        <p class="lead">One pattern for everything on bushleague. Pick a name. Get a URL. Your agent handles git and deploy.</p>
+
+        <div class="formula">https://{your-name}.{product}.bushleague.xyz</div>
+
+        <div class="steps">
+          <div class="step"><b>1. Admin</b>You get a slug + GitHub repo with the skill baked in.</div>
+          <div class="step"><b>2. Designer</b>Tell Cursor: <em>Set up my bushleague lane.</em> Edit copy in plain English.</div>
+          <div class="step"><b>3. Live</b>Push <code>main</code>. CI deploys. Production never touched.</div>
+        </div>
+
+        <div class="card" style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Production</th>
+                <th>Your lane</th>
+                <th>Example</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>dotcache</td>
+                <td><a href="https://dotcache.bushleague.xyz">dotcache.bushleague.xyz</a></td>
+                <td>{slug}.dotcache.bushleague.xyz</td>
+                <td><a href="https://james.dotcache.bushleague.xyz">james.dotcache</a></td>
+                <td class="live">live</td>
+              </tr>
+              <tr>
+                <td>foundry</td>
+                <td><a href="https://foundry.bushleague.xyz">foundry.bushleague.xyz</a></td>
+                <td>{slug}.foundry.bushleague.xyz</td>
+                <td>maya.foundry…</td>
+                <td class="soon">ready</td>
+              </tr>
+              <tr>
+                <td>radar</td>
+                <td><a href="https://radar.bushleague.xyz">radar.bushleague.xyz</a></td>
+                <td>{slug}.radar.bushleague.xyz</td>
+                <td>—</td>
+                <td class="soon">ready</td>
+              </tr>
+              <tr>
+                <td>dotcache-builder</td>
+                <td><a href="https://builder.dotcache.bushleague.xyz">builder.dotcache…</a></td>
+                <td>platform lane</td>
+                <td>builder</td>
+                <td class="soon">experiment</td>
+              </tr>
+              <tr>
+                <td>cheetofax</td>
+                <td><a href="https://cheetofax.bushleague.xyz">cheetofax…</a></td>
+                <td>{slug}.cheetofax.bushleague.xyz</td>
+                <td>—</td>
+                <td class="soon">ready</td>
+              </tr>
+              <tr>
+                <td>classroom</td>
+                <td><a href="https://classroom.bushleague.xyz">classroom…</a></td>
+                <td>{slug}.classroom.bushleague.xyz</td>
+                <td>—</td>
+                <td class="soon">ready</td>
+              </tr>
+              <tr>
+                <td>cachebar</td>
+                <td><a href="https://cachebar.bushleague.xyz">cachebar…</a> (legacy)</td>
+                <td>alias of dotcache</td>
+                <td>—</td>
+                <td class="live">alias</td>
+              </tr>
+              <tr>
+                <td>dar · drown · harpoon · tokengod · verse</td>
+                <td>apex subdomains</td>
+                <td>{slug}.bushleague.xyz or product zone</td>
+                <td>—</td>
+                <td class="soon">on request</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="lead" style="font-size:1rem;margin-top:20px">
+          DNS is wildcard. No new A records per person. Each lane = own repo folder + deploy secrets. Never shared with production.
+        </p>
+        <div class="actions">
+          <button type="button" class="button primary tab-jump" data-tab="skill">Open skill tab →</button>
+          <a class="button" href="https://github.com/dutchiono/dotcache-james">James example repo</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SKILL -->
+    <section id="skill" class="panel">
+      <div style="padding-top:40px">
+        <span class="kicker">Cursor agent skill</span>
+        <h1>bushleague-lane</h1>
+        <p class="lead">Drop this in any lane repo. Designer copies one line into chat. Agent bootstraps, edits, deploys — no git questions.</p>
+
+        <div class="card">
+          <small>Skill name</small>
+          <h3 style="font-family:'JetBrains Mono',monospace">bushleague-lane</h3>
+          <p>Full skill file: <a href="https://github.com/dutchiono/bushleague-hosting/blob/main/templates/lane-repo/.cursor/skills/bushleague-lane/SKILL.md" id="skill-link">github → SKILL.md</a></p>
+        </div>
+
+        <h2>Designer — copy into Cursor</h2>
+        <div class="copybox" id="prompt-setup">Set up my bushleague lane. Read LANE.md and make it work.<button class="copybtn" data-copy="prompt-setup">Copy</button></div>
+
+        <h2>Then say anything</h2>
+        <div class="copybox" id="prompt-edit">Change the main headline to: [YOUR TEXT HERE]<button class="copybtn" data-copy="prompt-edit">Copy</button></div>
+        <div class="copybox" id="prompt-deploy">Deploy my site and send me the link.<button class="copybtn" data-copy="prompt-deploy">Copy</button></div>
+
+        <h2>What the agent does</h2>
+        <div class="skill-md">
+          <h3>Reads LANE.md</h3>
+          slug · product · live_url · what production to never touch
+          <hr />
+          <h3>Bootstrap (silent)</h3>
+          Creates missing LANE.md, deploy workflow, git branches. Never asks about Convex, nginx, or SSH.
+          <hr />
+          <h3>Git</h3>
+          Work on <code>lane/{slug}/*</code> → merge to <code>main</code> → push → CI deploys to live_url
+          <hr />
+          <h3>Hard stops</h3>
+          No production URLs, Convex projects, Telegram bots, or Stripe unless admin approves.
+          <hr />
+          <h3>Done =</h3>
+          One plain sentence + full URL: <code>https://{slug}.{product}.bushleague.xyz</code>
+        </div>
+
+        <div class="actions" style="margin-top:24px">
+          <a class="button primary" href="https://github.com/dutchiono/bushleague-hosting">bushleague-hosting repo</a>
+          <a class="button" href="https://github.com/dutchiono/dotcache-james">dotcache-james (James)</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="support">
+    <div class="shell">
+      <span>Built by <a href="https://ionoi.eth.sucks" target="_blank" rel="noreferrer">ionoi</a>.</span>
+      <span> Lanes + skill: <a href="#" class="tab-jump" data-tab="lanes">bushleague.xyz/#lanes</a></span>
+    </div>
+  </footer>
+
+  <script>
+    function showTab(id) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      const panel = document.getElementById(id);
+      const tab = document.querySelector('.tab[data-tab="' + id + '"]');
+      if (panel) panel.classList.add('active');
+      if (tab) tab.classList.add('active');
+      history.replaceState(null, '', id === 'home' ? '/' : '#' + id);
+    }
+    document.querySelectorAll('.tab, .tab-jump').forEach(el => {
+      el.addEventListener('click', () => showTab(el.dataset.tab));
+    });
+    const hash = location.hash.replace('#', '');
+    if (hash === 'lanes' || hash === 'skill') showTab(hash);
+
+    document.querySelectorAll('.copybtn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const box = document.getElementById(btn.dataset.copy);
+        const text = box.childNodes[0].textContent.trim();
+        navigator.clipboard.writeText(text).then(() => {
+          btn.textContent = 'Copied';
+          setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
