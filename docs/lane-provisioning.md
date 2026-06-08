@@ -65,7 +65,20 @@ See `templates/nginx/dotcache-lanes.map.conf`. After edit:
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-## 5. Hand off to designer
+## 6. TLS (per lane hostname)
+
+DNS wildcard does **not** auto-include TLS. Add each new lane to the product cert:
+
+```bash
+sudo expand-lane-cert.sh dotcache NEW_SLUG
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+**Live on dotcache cert (2026-06-08):** `dotcache.bushleague.xyz`, `james.dotcache.bushleague.xyz`, `builder.dotcache.bushleague.xyz`
+
+For unlimited lanes without re-running certbot: wire Namecheap DNS-01 wildcard `*.dotcache.bushleague.xyz` (not done yet).
+
+## 7. Hand off to designer
 
 Send them:
 
